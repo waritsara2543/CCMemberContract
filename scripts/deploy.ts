@@ -12,13 +12,13 @@ async function main() {
   await CryptoCoffPoint.deployed();
 
   // deploy CryptoCoffMember
-  const CryptoCoffMemberFactory = await ethers.getContractFactory(
-    "CryptoCoffMember"
-  );
-  const CryptoCoffMember = await CryptoCoffMemberFactory.deploy(
-    CryptoCoffPoint.address
-  );
-  await CryptoCoffMember.deployed();
+  // const CryptoCoffMemberFactory = await ethers.getContractFactory(
+  //   "CryptoCoffMember"
+  // );
+  // const CryptoCoffMember = await CryptoCoffMemberFactory.deploy(
+  //   CryptoCoffPoint.address
+  // );
+  // await CryptoCoffMember.deployed();
 
   // deploy MemberEmitLog
   // const MemberEmitLogFactory = await ethers.getContractFactory("MemberEmitLog");
@@ -27,11 +27,11 @@ async function main() {
 
   await saveAddresses(hre.network.name, {
     CryptoCoffPoint: CryptoCoffPoint.address,
-    CryptoCoffMember: CryptoCoffMember.address,
+    // CryptoCoffMember: CryptoCoffMember.address,
     // MemberEmitLog: MemberEmitLog.address,
   });
   console.log(`CryptoCoffPoint deployed to ${CryptoCoffPoint.address}`);
-  console.log(`CryptoCoffMember deployed to ${CryptoCoffMember.address}`);
+  // console.log(`CryptoCoffMember deployed to ${CryptoCoffMember.address}`);
   // console.log(`MemberEmitLog deployed to ${MemberEmitLog.address}`);
 }
 

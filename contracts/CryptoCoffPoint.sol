@@ -40,26 +40,55 @@ contract CryptoCoffPoint is ICryptoCoffPoint, ERC721, ERC721URIStorage,  ERC721E
     ) external pure returns (bool upkeepNeeded, bytes memory performData) {
         upkeepNeeded = true;
         address customerAddress = bytes32ToAddress(log.topics[1]);
-        // uint point = uint(log.topics[2]);
-        performData = abi.encode(customerAddress);
-        // performData = abi.encode(point);
+        uint256 point = uint256(log.topics[2]);
+        performData = abi.encode(customerAddress, point);
     }
 
     function performUpkeep(bytes calldata performData) external override {
         counted += 1;
-        address customerAddress = abi.decode(performData, (address));
-        // uint point = abi.decode(performData, (uint));
+        (address customerAddress, uint256 point) = abi.decode(performData, (address, uint256));
         emit Customer(customerAddress);
+        addPoint(customerAddress, point);
+    }
 
+    function addPoint(address customerAddress, uint256 point) public {
         //add point
         uint256[] memory item = getTokenOfOwnerByIndex(customerAddress);
+
+        uint256 archiveGoalPoint = IpfsUri.length;
         if(item.length > 0){
-            uint256 itemId = item[0];
-            addPoint(itemId);
+            for(uint i = 0; i < item.length; i++){
+                if(IsAchieveGoal(item[i])){
+                    safeMint(customerAddress, point);
+                }else{
+                    uint256 currentPoint = pointStage(item[i], 0) + 1;
+                    uint256 remaining = archiveGoalPoint - currentPoint;
+                    if(remaining < point){
+                        setNewTokenUri(item[i], remaining);
+                        addPointToNewNft(point - remaining, archiveGoalPoint, customerAddress);
+                    }else{
+                        setNewTokenUri(item[i], point);
+                    }
+                }
+            }
         }else{
-            safeMint(customerAddress);
+            addPointToNewNft(point, archiveGoalPoint, customerAddress);
+            
         }
-        
+    }
+
+    function addPointToNewNft (uint256 point, uint256 archiveGoalPoint, address customerAddress) internal{
+        uint256 NftCount = point/archiveGoalPoint;
+                if (point % archiveGoalPoint > 0) {
+                    NftCount += 1;
+                }
+                for(uint i = 0; i < NftCount; i++){
+                    if(i == NftCount - 1){
+                        safeMint(customerAddress, point - archiveGoalPoint * i);
+                    }else{
+                        safeMint(customerAddress, archiveGoalPoint);
+                    }
+                }
     }
 
     function getTokenOfOwnerByIndex(address owner)
@@ -76,26 +105,25 @@ contract CryptoCoffPoint is ICryptoCoffPoint, ERC721, ERC721URIStorage,  ERC721E
         return item;
     }
 
-    function safeMint(address to) public {
-        uint256[] memory item = getTokenOfOwnerByIndex(to);
-        require(item.length == 0, "You already have a point NFT");
+    function safeMint(address to, uint256 point) public {
         uint256 tokenId = _tokenIdCounter;
         _tokenIdCounter += 1;
         _safeMint(to, tokenId);
-        _setTokenURI(tokenId, IpfsUri[0]);
+        _setTokenURI(tokenId, IpfsUri[point-1]);
     }
 
-    function addPoint (uint256 _tokenId) public  {
-        string memory newUri = getNewUri(_tokenId);
+    function setNewTokenUri (uint256 _tokenId, uint256 point) public  {
+        uint newPoint = pointStage(_tokenId, point);
+        string memory newUri = IpfsUri[newPoint];
         // Update the URI
         _setTokenURI(_tokenId, newUri);
     }
 
-    function getNewUri(uint256 _tokenId) public view returns (string memory newUri) {
+    function pointStage(uint256 _tokenId,uint256 point) public view returns (uint256 newPoint) {
         string memory _uri = tokenURI(_tokenId);
         for (uint256 i = 0; i < IpfsUri.length; i++) {
             if (compareStrings(_uri, IpfsUri[i])) {
-                return IpfsUri[i+1];
+                return i + point;
             }
         }
     }

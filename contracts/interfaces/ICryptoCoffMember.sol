@@ -22,7 +22,7 @@ interface ICryptoCoffMember is ILogAutomation {
 
     function safeMint(address to) external;
 
-    function upgradeMember(uint256 tokenId) external;
+    function upgradeMember(uint256 _pointTokenId, address customerAddress) external;
 
     function MemberStage(uint256 tokenId) external view returns (uint256);
 

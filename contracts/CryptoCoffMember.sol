@@ -41,24 +41,33 @@ contract CryptoCoffMember is ICryptoCoffMember, ERC721, ERC721URIStorage,  ERC72
 
     function performUpkeep(bytes calldata performData) external override {
         counted += 1;
-        address customerAddress = abi.decode(performData, (address));
+        (address customerAddress, uint256 pointItemId)= abi.decode(performData, (address, uint256));
         emit Customer(customerAddress);
 
         //upgrate member
-        uint256[] memory item = getTokenOfOwnerByIndex(customerAddress);
-        uint256[] memory pointItem = point.getTokenOfOwnerByIndex(customerAddress);
-        bool isAchieveGoal = point.IsAchieveGoal(pointItem[0]);
+        upgradeMember(pointItemId, customerAddress);
+        
+    }
 
-        require(isAchieveGoal, "You don't have enough NFT point" );
+    function upgradeMember (uint256 _pointTokenId, address customerAddress) public{
+        uint256[] memory item = getTokenOfOwnerByIndex(customerAddress);
+        require(point.IsAchieveGoal(_pointTokenId), "You don't have enough NFT point" );
 
         if(item.length > 0){
             uint256 itemId = item[0];
-            upgradeMember(itemId);
+            if (MemberStage(itemId) >= 2) {
+                return;
+            }
+            // Get the current stage of the member and add 1
+            uint256 newVal = MemberStage(itemId) + 1;
+            // store the new URI
+            string memory newUri = IpfsUri[newVal];
+            // Update the URI
+            _setTokenURI(itemId, newUri);
         }else{
             safeMint(customerAddress);
         }
-        point.burn(pointItem[0]);
-        
+        point.burn(_pointTokenId);
     }
 
     function getTokenOfOwnerByIndex(address owner)
@@ -84,29 +93,17 @@ contract CryptoCoffMember is ICryptoCoffMember, ERC721, ERC721URIStorage,  ERC72
         _setTokenURI(tokenId, IpfsUri[0]);
     }
 
-    function upgradeMember (uint256 _tokenId) public  {
-        if (MemberStage(_tokenId) >= 2) {
-            return;
-        }
-        // Get the current stage of the flower and add 1
-        uint256 newVal = MemberStage(_tokenId) + 1;
-        // store the new URI
-        string memory newUri = IpfsUri[newVal];
-        // Update the URI
-        _setTokenURI(_tokenId, newUri);
-    }
-
     function MemberStage(uint256 _tokenId) public view returns (uint256) {
         string memory _uri = tokenURI(_tokenId);
-        // Seed
+        // bronze
         if (compareStrings(_uri, IpfsUri[0])) {
             return 0;
         }
-        // Sprout
+        // Silver
         if (compareStrings(_uri, IpfsUri[1])) {
             return 1;
         }
-        // Must be a Bloom
+        // Gold
         return 2;
     }
 
