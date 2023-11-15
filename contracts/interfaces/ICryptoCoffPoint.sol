@@ -24,7 +24,7 @@ interface ICryptoCoffPoint is ILogAutomation {
 
     function safeMint(address to, uint256 point) external;
 
-    function burn(uint256 tokenId) external;
+    function claimPoint (uint256 _tokenId) external;
 
     function setNewTokenUri(uint256 tokenId, uint256 point) external;
 
@@ -39,4 +39,6 @@ interface ICryptoCoffPoint is ILogAutomation {
     function supportsInterface(bytes4 interfaceId) external view returns (bool);
 
     function IsAchieveGoal(uint256 tokenId) external view returns (bool);
+
+    function IsClaimed(uint256 tokenId) external view returns (bool);
 }

@@ -41,18 +41,20 @@ contract CryptoCoffMember is ICryptoCoffMember, ERC721, ERC721URIStorage,  ERC72
 
     function performUpkeep(bytes calldata performData) external override {
         counted += 1;
-        (address customerAddress, uint256 pointItemId)= abi.decode(performData, (address, uint256));
+        (address customerAddress, uint256 pointItemId, string memory request)= abi.decode(performData, (address, uint256, string));
         emit Customer(customerAddress);
 
-        //upgrate member
-        upgradeMember(pointItemId, customerAddress);
-        
+        if(compareStrings(request, "coffee")){
+            point.claimPoint(pointItemId);
+        }else{
+           //upgrate member
+            upgradeMember(pointItemId, customerAddress);
+        }
     }
 
     function upgradeMember (uint256 _pointTokenId, address customerAddress) public{
         uint256[] memory item = getTokenOfOwnerByIndex(customerAddress);
-        require(point.IsAchieveGoal(_pointTokenId), "You don't have enough NFT point" );
-
+        point.claimPoint(_pointTokenId);
         if(item.length > 0){
             uint256 itemId = item[0];
             if (MemberStage(itemId) >= 2) {
@@ -67,7 +69,6 @@ contract CryptoCoffMember is ICryptoCoffMember, ERC721, ERC721URIStorage,  ERC72
         }else{
             safeMint(customerAddress);
         }
-        point.burn(_pointTokenId);
     }
 
     function getTokenOfOwnerByIndex(address owner)
