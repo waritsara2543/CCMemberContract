@@ -7,9 +7,11 @@ import './Admin.sol';
 
 import './interfaces/ICampaign.sol';
 
-contract Campaign is ICampaign {
+contract Campaign is ICampaign, Admin {
     uint256 private _campaignIdCounter;
     mapping(uint256 => campaignsInfo) public campaigns;
+
+    constructor() Admin() {}
 
     // create campaign function
     function createCampaign(
@@ -18,7 +20,7 @@ contract Campaign is ICampaign {
         string memory _baseURI,
         uint256 _timeStart,
         uint256 _timeEnd
-    ) public {
+    ) onlyAdmins(msg.sender) public {
         //cannot create campaign if has another campaign running
         require(!hasCampaignRunning(_timeStart,_timeEnd ), 'has campaign running');
 
@@ -67,7 +69,7 @@ contract Campaign is ICampaign {
         return campaigns[_campaignId];
     }
 
-    function addNftToCampaign (uint256 _campaignId, uint256 _nftId) public {
+    function addNftToCampaign (uint256 _campaignId, uint256 _nftId) external {
         campaigns[_campaignId].nftId.push(_nftId);
     }
 
@@ -123,7 +125,7 @@ contract Campaign is ICampaign {
     }
 
     function compareStrings(string memory a, string memory b)
-        public
+        internal
         pure
         returns (bool)
     {

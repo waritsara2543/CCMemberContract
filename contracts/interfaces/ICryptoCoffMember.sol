@@ -20,16 +20,6 @@ interface ICryptoCoffMember is ILogAutomation {
     
     function getTokenOfOwnerByIndex(address owner) external view returns (uint256[] memory);
 
-    function safeMint(address to) external;
-
-    function upgradeMember(uint256 _pointTokenId, address customerAddress) external;
-
-    function MemberStage(uint256 tokenId) external view returns (uint256);
-
-    function compareStrings(string memory a, string memory b) external pure returns (bool);
-
-    function bytes32ToAddress(bytes32 _address) external pure returns (address);
-
     function tokenURI(uint256 tokenId) external view returns (string memory);
 
     function supportsInterface(bytes4 interfaceId) external view returns (bool);

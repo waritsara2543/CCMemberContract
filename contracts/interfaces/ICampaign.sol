@@ -39,10 +39,6 @@ interface ICampaign {
     function getCampaignByPeriod(string memory period) external  view
         returns (uint256[] memory id);
 
-    function compareStrings(string memory a, string memory b)
-        external
-        pure
-        returns (bool);
 
    
 }

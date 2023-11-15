@@ -26,24 +26,19 @@ contract CryptoCoffMember is ICryptoCoffMember, ERC721, ERC721URIStorage,  ERC72
         point = ICryptoCoffPoint(_pointAddress);
     }
 
-    event Customer(address indexed customerAddress);
-
-    uint256 public counted = 0;
-
     function checkLog(
         Log calldata log,
         bytes memory
     ) external pure returns (bool upkeepNeeded, bytes memory performData) {
         upkeepNeeded = true;
         address customerAddress = bytes32ToAddress(log.topics[1]);
-        performData = abi.encode(customerAddress);
+        uint256 pointItemId = uint256(log.topics[2]);
+        string memory request = bytes32ToStr(log.topics[3]);        
+        performData = abi.encode(customerAddress, pointItemId, request);
     }
 
     function performUpkeep(bytes calldata performData) external override {
-        counted += 1;
         (address customerAddress, uint256 pointItemId, string memory request)= abi.decode(performData, (address, uint256, string));
-        emit Customer(customerAddress);
-
         if(compareStrings(request, "coffee")){
             point.claimPoint(pointItemId);
         }else{
@@ -52,7 +47,7 @@ contract CryptoCoffMember is ICryptoCoffMember, ERC721, ERC721URIStorage,  ERC72
         }
     }
 
-    function upgradeMember (uint256 _pointTokenId, address customerAddress) public{
+    function upgradeMember (uint256 _pointTokenId, address customerAddress) internal{
         uint256[] memory item = getTokenOfOwnerByIndex(customerAddress);
         point.claimPoint(_pointTokenId);
         if(item.length > 0){
@@ -85,7 +80,7 @@ contract CryptoCoffMember is ICryptoCoffMember, ERC721, ERC721URIStorage,  ERC72
         return item;
     }
 
-    function safeMint(address to) public {
+    function safeMint(address to) internal {
         uint256[] memory item = getTokenOfOwnerByIndex(to);
         require(item.length == 0, "You already have a member");
         uint256 tokenId = _tokenIdCounter;
@@ -94,7 +89,7 @@ contract CryptoCoffMember is ICryptoCoffMember, ERC721, ERC721URIStorage,  ERC72
         _setTokenURI(tokenId, IpfsUri[0]);
     }
 
-    function MemberStage(uint256 _tokenId) public view returns (uint256) {
+    function MemberStage(uint256 _tokenId) internal view returns (uint256) {
         string memory _uri = tokenURI(_tokenId);
         // bronze
         if (compareStrings(_uri, IpfsUri[0])) {
@@ -109,7 +104,7 @@ contract CryptoCoffMember is ICryptoCoffMember, ERC721, ERC721URIStorage,  ERC72
     }
 
     function compareStrings(string memory a, string memory b)
-        public
+        internal
         pure
         returns (bool)
     {
@@ -117,8 +112,16 @@ contract CryptoCoffMember is ICryptoCoffMember, ERC721, ERC721URIStorage,  ERC72
             keccak256(abi.encodePacked((b))));
     }
 
-        function bytes32ToAddress(bytes32 _address) public pure returns (address) {
+    function bytes32ToAddress(bytes32 _address) internal pure returns (address) {
         return address(uint160(uint256(_address)));
+    }
+
+    function bytes32ToStr(bytes32 _bytes32) internal pure returns (string memory) {
+        bytes memory bytesArray = new bytes(32);
+        for (uint256 i; i < 32; i++) {
+            bytesArray[i] = _bytes32[i];
+            }
+        return string(bytesArray);
     }
 
     function tokenURI(uint256 tokenId)

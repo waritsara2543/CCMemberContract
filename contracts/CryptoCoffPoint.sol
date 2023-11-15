@@ -23,10 +23,6 @@ contract CryptoCoffPoint is ICryptoCoffPoint, ERC721, ERC721URIStorage,  ERC721E
         campaign = ICampaign(_campaignAddress);
     }
 
-    event Customer(address indexed customerAddress);
-
-    uint256 public counted = 0;
-
     function checkLog(
         Log calldata log,
         bytes memory
@@ -34,22 +30,21 @@ contract CryptoCoffPoint is ICryptoCoffPoint, ERC721, ERC721URIStorage,  ERC721E
         upkeepNeeded = true;
         address customerAddress = bytes32ToAddress(log.topics[1]);
         uint256 point = uint256(log.topics[2]);
-        performData = abi.encode(customerAddress, point);
+        uint256 cid = uint256(log.topics[3]);
+        performData = abi.encode(customerAddress, point, cid);
     }
 
     function performUpkeep(bytes calldata performData) external override {
-        counted += 1;
         (address customerAddress, uint256 point, uint256 _campaignId) = abi.decode(performData, (address, uint256,uint256));
-        emit Customer(customerAddress);
         setCampaignId(_campaignId);
         addPoint(customerAddress, point);
     }
 
-    function setCampaignId(uint256 _campaignId) public {
+    function setCampaignId(uint256 _campaignId) internal {
         campaignId = _campaignId;
     }
 
-    function addPoint(address customerAddress, uint256 point) public {
+    function addPoint(address customerAddress, uint256 point) internal {
         //TODO: require the NFT is on active campaign 
         require(campaign.isRunningCampaign(campaignId), "This campaign is not running");
 
@@ -134,7 +129,7 @@ contract CryptoCoffPoint is ICryptoCoffPoint, ERC721, ERC721URIStorage,  ERC721E
     }
 
 
-    function safeMint(address to, uint256 point) public {
+    function safeMint(address to, uint256 point) internal {
         uint256 tokenId = _tokenIdCounter;
         _tokenIdCounter += 1;
         
@@ -145,14 +140,14 @@ contract CryptoCoffPoint is ICryptoCoffPoint, ERC721, ERC721URIStorage,  ERC721E
         _setTokenURI(tokenId, getMetadata()[point-1]);
     }
 
-    function setNewTokenUri (uint256 _tokenId, uint256 point) public  {
+    function setNewTokenUri (uint256 _tokenId, uint256 point) internal  {
         uint newPoint = pointStage(_tokenId, point);
         string memory newUri = getMetadata()[newPoint];
         // Update the URI
         _setTokenURI(_tokenId, newUri);
     }
 
-    function pointStage(uint256 _tokenId,uint256 point) public view returns (uint256 newPoint) {
+    function pointStage(uint256 _tokenId,uint256 point) internal view returns (uint256 newPoint) {
         string memory _uri = tokenURI(_tokenId);
         for (uint256 i = 0; i < archiveGoalPoint ; i++) {
             if (compareStrings(_uri, getMetadata()[i])) {
@@ -162,7 +157,7 @@ contract CryptoCoffPoint is ICryptoCoffPoint, ERC721, ERC721URIStorage,  ERC721E
     }
 
     function compareStrings(string memory a, string memory b)
-        public
+        internal
         pure
         returns (bool)
     {
@@ -232,7 +227,7 @@ contract CryptoCoffPoint is ICryptoCoffPoint, ERC721, ERC721URIStorage,  ERC721E
         return false;
     }
 
-    function claimPoint (uint256 _tokenId) public {
+    function claimPoint (uint256 _tokenId) external {
         require(IsAchieveGoal(_tokenId), "You don't have enough NFT point" );
         require(!IsClaimed(_tokenId), "This NFT was claimed");    
 
@@ -240,7 +235,7 @@ contract CryptoCoffPoint is ICryptoCoffPoint, ERC721, ERC721URIStorage,  ERC721E
     }
 
     function getMetadata() public view returns (string[] memory){
-        string[] memory metadata = new string[](10);
+        string[] memory metadata = new string[](archiveGoalPoint+1);
         ICampaign.campaignsInfo memory campaignDetail = campaign.getCampaignInfo(campaignId);
         for (uint256 i = 0; i < archiveGoalPoint+1 ; i++) {
             if(i == archiveGoalPoint){

@@ -17,20 +17,10 @@ interface ICryptoCoffPoint is ILogAutomation {
     ) external returns (bool upkeepNeeded, bytes memory performData);
 
     function performUpkeep(bytes calldata performData) external;
-    
-    function addPoint(address customerAddress, uint256 point) external;
-    
+        
     function getTokenOfOwnerByIndex(address owner) external view returns (uint256[] memory);
 
-    function safeMint(address to, uint256 point) external;
-
     function claimPoint (uint256 _tokenId) external;
-
-    function setNewTokenUri(uint256 tokenId, uint256 point) external;
-
-    function pointStage(uint256 tokenId, uint256 point) external view returns (uint256);
-
-    function compareStrings(string memory a, string memory b) external pure returns (bool);
 
     function bytes32ToAddress(bytes32 _address) external pure returns (address);
 
