@@ -15,9 +15,10 @@ contract CryptoCoffMember is ICryptoCoffMember, ERC721, ERC721URIStorage,  ERC72
     uint256 private _tokenIdCounter;
     // Metadata information for each stage of the NFT on IPFS.
     string[] IpfsUri = [
-        "https://ipfs.io/ipfs/QmYaTsyxTDnrG4toc8721w62rL4ZBKXQTGj9c9Rpdrntou/seed.json",
-        "https://ipfs.io/ipfs/QmYaTsyxTDnrG4toc8721w62rL4ZBKXQTGj9c9Rpdrntou/purple-sprout.json",
-        "https://ipfs.io/ipfs/QmYaTsyxTDnrG4toc8721w62rL4ZBKXQTGj9c9Rpdrntou/purple-blooms.json"
+        "https://bafybeihhkgur6v2ucgacq7ujgoren2lmsxk5vr3q2tqlcd7cn35fw6mtku.ipfs.nftstorage.link/rank1.json",
+        "https://bafybeihhkgur6v2ucgacq7ujgoren2lmsxk5vr3q2tqlcd7cn35fw6mtku.ipfs.nftstorage.link/rank2.json",
+        "https://bafybeihhkgur6v2ucgacq7ujgoren2lmsxk5vr3q2tqlcd7cn35fw6mtku.ipfs.nftstorage.link/rank3.json"
+        
     ];
 
     ICryptoCoffPoint public point;
@@ -47,7 +48,7 @@ contract CryptoCoffMember is ICryptoCoffMember, ERC721, ERC721URIStorage,  ERC72
         }
     }
 
-    function upgradeMember (uint256 _pointTokenId, address customerAddress) internal{
+    function upgradeMember (uint256 _pointTokenId, address customerAddress) public{
         uint256[] memory item = getTokenOfOwnerByIndex(customerAddress);
         point.claimPoint(_pointTokenId);
         if(item.length > 0){
@@ -80,7 +81,7 @@ contract CryptoCoffMember is ICryptoCoffMember, ERC721, ERC721URIStorage,  ERC72
         return item;
     }
 
-    function safeMint(address to) internal {
+    function safeMint(address to) public {
         uint256[] memory item = getTokenOfOwnerByIndex(to);
         require(item.length == 0, "You already have a member");
         uint256 tokenId = _tokenIdCounter;

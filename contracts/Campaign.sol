@@ -91,38 +91,53 @@ contract Campaign is ICampaign, Admin {
     }
 
     function getCampaignByPeriod(string memory period)
-        public
-        view
-        returns (uint256[] memory id)
-    {
-        uint256[] memory item = new uint256[](_campaignIdCounter);
+    public
+    view
+    returns (uint256[] memory)
+{
+    uint256[] memory item = new uint256[](_campaignIdCounter);
+    uint256 count = 0;
 
+    if (compareStrings(period, 'running')) {
         for (uint256 i = 0; i < _campaignIdCounter; i++) {
-            if(compareStrings(period, 'running')){
-                if (
-                    campaigns[i].timeStart <= block.timestamp &&
-                    campaigns[i].timeEnd >= block.timestamp
-                ) {
-                    item[i] = i;
-                }
-            }else if(compareStrings(period, 'upcoming')){
-                if (
-                    campaigns[i].timeStart > block.timestamp
-                ) {
-                    item[i] = i;
-                }
-            }else if(compareStrings(period, 'past')){
-                if (
-                    campaigns[i].timeEnd < block.timestamp
-                ) {
-                    item[i] = i;
-                }
+            if (
+                campaigns[i].timeStart <= block.timestamp &&
+                campaigns[i].timeEnd >= block.timestamp
+            ) {
+                item[count] = i;
+                count++;
             }
         }
-
-        return item;
-       
+    } else if (compareStrings(period, 'upcoming')) {
+        for (uint256 i = 0; i < _campaignIdCounter; i++) {
+            if (
+                campaigns[i].timeStart > block.timestamp
+            ) {
+                item[count] = i;
+                count++;
+            }
+        }
+    } else if (compareStrings(period, 'past')) {
+        for (uint256 i = 0; i < _campaignIdCounter; i++) {
+            if (
+                campaigns[i].timeEnd < block.timestamp
+            ) {
+                item[count] = i;
+                count++;
+            }
+        }
     }
+
+    // Resize array to remove unused space
+    uint256[] memory result = new uint256[](count);
+    for (uint256 i = 0; i < count; i++) {
+        result[i] = item[i];
+    }
+
+    return result;
+}
+
+
 
     function compareStrings(string memory a, string memory b)
         internal

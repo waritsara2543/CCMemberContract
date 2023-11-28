@@ -36,38 +36,30 @@ contract CryptoCoffPoint is ICryptoCoffPoint, ERC721, ERC721URIStorage,  ERC721E
 
     function performUpkeep(bytes calldata performData) external override {
         (address customerAddress, uint256 point, uint256 _campaignId) = abi.decode(performData, (address, uint256,uint256));
-        setCampaignId(_campaignId);
-        addPoint(customerAddress, point);
+        addPoint(customerAddress, point, _campaignId);
     }
 
-    function setCampaignId(uint256 _campaignId) internal {
+    function setCampaignId(uint256 _campaignId) public {
         campaignId = _campaignId;
     }
 
-    function addPoint(address customerAddress, uint256 point) internal {
+    function addPoint(address _customerAddress, uint256 _point, uint256 _campaignId) public {
         //TODO: require the NFT is on active campaign 
-        require(campaign.isRunningCampaign(campaignId), "This campaign is not running");
+        require(campaign.isRunningCampaign(_campaignId), "This campaign is not running");
 
         //add point
-        uint256[] memory item = getTokenOfOwnerByIndex(customerAddress);
+        uint256[] memory item = getTokenOfOwnerByIndex(_customerAddress);
         if(item.length > 0){
-            for(uint i = 0; i < item.length; i++){  
-                if(IsAchieveGoal(item[i])){
-                    safeMint(customerAddress, point);
-                }else{
-                    uint256 currentPoint = pointStage(item[i], 0) + 1;
+                    uint256 currentPoint = pointStage(item[item.length-1], 0) + 1;
                     uint256 remaining = archiveGoalPoint - currentPoint;
-                    if(remaining < point){
-                        setNewTokenUri(item[i], remaining);
-                        addPointToNewNft(point - remaining, customerAddress);
+                    if(remaining <= _point){
+                        setNewTokenUri(item[item.length-1], remaining);
+                        addPointToNewNft(_point - remaining, _customerAddress);
                     }else{
-                        setNewTokenUri(item[i], point);
+                        setNewTokenUri(item[item.length-1], _point);
                     }
-                }
-            }
         }else{
-            addPointToNewNft(point, customerAddress);
-            
+            addPointToNewNft(_point, _customerAddress);
         }
     }
 
@@ -129,7 +121,7 @@ contract CryptoCoffPoint is ICryptoCoffPoint, ERC721, ERC721URIStorage,  ERC721E
     }
 
 
-    function safeMint(address to, uint256 point) internal {
+    function safeMint(address to, uint256 point) public {
         uint256 tokenId = _tokenIdCounter;
         _tokenIdCounter += 1;
         
@@ -240,7 +232,6 @@ contract CryptoCoffPoint is ICryptoCoffPoint, ERC721, ERC721URIStorage,  ERC721E
         for (uint256 i = 0; i < archiveGoalPoint+1 ; i++) {
             if(i == archiveGoalPoint){
                 metadata[i] = string(abi.encodePacked(campaignDetail.baseURI, "claimed.json"));
-                
                 }else{
                 metadata[i] = string(abi.encodePacked(campaignDetail.baseURI, uint2str(i + 1), "point.json"));
                 }

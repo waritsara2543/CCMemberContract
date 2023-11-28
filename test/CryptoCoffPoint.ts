@@ -24,22 +24,21 @@ describe("Add point contract", function () {
       "test",
       baseURI,
       1699944892,
-      1700463292
+      1701224805
     );
 
     await campaignContract.createCampaign(
       "test",
       "test",
       baseURI,
-      1700895292,
-      1700981692
+      1701328153,
+      1701414553
     );
 
     [owner] = await ethers.getSigners();
   });
 
   it("Should mint an NFT", async function () {
-    await addPointContract.setCampaignId(0);
     // Mint an NFT
     await addPointContract.safeMint(owner.address, 3);
 
@@ -51,27 +50,33 @@ describe("Add point contract", function () {
   });
 
   it("Should add points to an NFT", async function () {
-    await addPointContract.setCampaignId(0);
     // Mint an NFT
-    await addPointContract.safeMint(owner.address, 1);
+    // await addPointContract.safeMint(owner.address, 1);
 
     // Add points to the NFT
-    await addPointContract.addPoint(owner.address, 8);
+    await addPointContract.addPoint(owner.address, 10, 0);
+
+    const token = await addPointContract.getTokenOfOwnerByCampaign(
+      owner.address,
+      0
+    );
 
     // Get the tokenURI
-    const tokenURI = await addPointContract.tokenURI(0);
+    const tokenURI0 = await addPointContract.tokenURI(0);
+    const tokenURI1 = await addPointContract.tokenURI(1);
 
     // Check if points are correctly added
-    expect(tokenURI).to.equal(`${baseURI}9point.json`);
+    expect(token.length).to.equal(2);
+    expect(tokenURI0).to.equal(`${baseURI}9point.json`);
+    expect(tokenURI1).to.equal(`${baseURI}1point.json`);
   });
 
   it("Should mint new NFTs", async function () {
-    await addPointContract.setCampaignId(0);
     // Mint an NFT
-    await addPointContract.safeMint(owner.address, 9);
+    await addPointContract.addPoint(owner.address, 9, 0);
 
     // add points to the NFT
-    await addPointContract.addPoint(owner.address, 2);
+    await addPointContract.addPoint(owner.address, 2, 0);
 
     // Get the tokenURI
     const tokenURI0 = await addPointContract.tokenURI(0);
@@ -83,12 +88,11 @@ describe("Add point contract", function () {
   });
 
   it("Should add points to an NFT and mint new NFT", async function () {
-    await addPointContract.setCampaignId(0);
     // Mint an NFT
-    await addPointContract.safeMint(owner.address, 1);
+    await addPointContract.addPoint(owner.address, 1, 0);
 
     // Add points to the NFT
-    await addPointContract.addPoint(owner.address, 9);
+    await addPointContract.addPoint(owner.address, 9, 0);
 
     // Get the tokenURI
     const tokenURI0 = await addPointContract.tokenURI(0);
@@ -100,24 +104,32 @@ describe("Add point contract", function () {
   });
 
   it("Should mint 3 Nfts", async function () {
-    await addPointContract.setCampaignId(0);
     // Mint an NFT
-    await addPointContract.addPoint(owner.address, 20);
+    await addPointContract.addPoint(owner.address, 20, 0);
+    await addPointContract.addPoint(owner.address, 9, 0);
 
     // Get the tokenURI
+
+    const token = await addPointContract.getTokenOfOwnerByCampaign(
+      owner.address,
+      0
+    );
+
     const tokenURI0 = await addPointContract.tokenURI(0);
     const tokenURI1 = await addPointContract.tokenURI(1);
     const tokenURI2 = await addPointContract.tokenURI(2);
+    const tokenURI3 = await addPointContract.tokenURI(3);
 
     // Check if points are correctly added
+    expect(token.length).to.equal(4);
     expect(tokenURI0).to.equal(`${baseURI}9point.json`);
     expect(tokenURI1).to.equal(`${baseURI}9point.json`);
-    expect(tokenURI2).to.equal(`${baseURI}2point.json`);
+    expect(tokenURI2).to.equal(`${baseURI}9point.json`);
+    expect(tokenURI3).to.equal(`${baseURI}2point.json`);
   });
 
   it("Should claim point", async function () {
-    await addPointContract.setCampaignId(0);
-    await addPointContract.addPoint(owner.address, 9);
+    await addPointContract.addPoint(owner.address, 9, 0);
     const tokenURIBefore = await addPointContract.tokenURI(0);
 
     await addPointContract.claimPoint(0);
@@ -128,15 +140,13 @@ describe("Add point contract", function () {
   });
 
   it("Should revert because not running campaign", async function () {
-    await addPointContract.setCampaignId(1);
-    expect(addPointContract.addPoint(owner.address, 9)).to.be.revertedWith(
+    expect(addPointContract.addPoint(owner.address, 9, 1)).to.be.revertedWith(
       "This campaign is not running"
     );
   });
 
   it("Should get token in campaign", async function () {
-    await addPointContract.setCampaignId(0);
-    addPointContract.addPoint(owner.address, 10);
+    addPointContract.addPoint(owner.address, 10, 0);
 
     const tokenInCampaign = await addPointContract.getTokenOfOwnerByCampaign(
       owner.address,
