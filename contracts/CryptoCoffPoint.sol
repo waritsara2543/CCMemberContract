@@ -49,7 +49,7 @@ contract CryptoCoffPoint is ICryptoCoffPoint, ERC721, ERC721URIStorage,  ERC721E
 
         //add point
         uint256[] memory item = getTokenOfOwnerByIndex(_customerAddress);
-        if(item.length > 0){
+        if(item.length > 0 && !IsAchieveGoal(item[item.length-1])){
                     uint256 currentPoint = pointStage(item[item.length-1], 0) + 1;
                     uint256 remaining = archiveGoalPoint - currentPoint;
                     if(remaining <= _point){
@@ -205,7 +205,7 @@ contract CryptoCoffPoint is ICryptoCoffPoint, ERC721, ERC721URIStorage,  ERC721E
 
     function IsAchieveGoal(uint256 tokenId) public view returns (bool){
         string memory _uri = tokenURI(tokenId);
-        if(compareStrings(_uri, getMetadata()[archiveGoalPoint-1])){
+        if(compareStrings(_uri, getMetadata()[archiveGoalPoint-1]) || compareStrings(_uri, getMetadata()[archiveGoalPoint])){
             return true;
         }
         return false;
