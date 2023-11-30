@@ -54,25 +54,25 @@ contract CryptoCoffPoint is ICryptoCoffPoint, ERC721, ERC721URIStorage,  ERC721E
                     uint256 remaining = archiveGoalPoint - currentPoint;
                     if(remaining <= _point){
                         setNewTokenUri(item[item.length-1], remaining);
-                        addPointToNewNft(_point - remaining, _customerAddress);
+                        addPointToNewNft(_point - remaining, _customerAddress,_campaignId);
                     }else{
                         setNewTokenUri(item[item.length-1], _point);
                     }
         }else{
-            addPointToNewNft(_point, _customerAddress);
+            addPointToNewNft(_point, _customerAddress,_campaignId);
         }
     }
 
-    function addPointToNewNft (uint256 point, address customerAddress) internal{
-        uint256 NftCount = point/archiveGoalPoint;
-                if (point % archiveGoalPoint > 0) {
+    function addPointToNewNft (uint256 _point, address _customerAddress, uint256 _campaignId) internal{
+        uint256 NftCount = _point/archiveGoalPoint;
+                if (_point % archiveGoalPoint > 0) {
                     NftCount += 1;
                 }
                 for(uint i = 0; i < NftCount; i++){
                     if(i == NftCount - 1){
-                        safeMint(customerAddress, point - archiveGoalPoint * i);
+                        safeMint(_customerAddress, _point - archiveGoalPoint * i,_campaignId);
                     }else{
-                        safeMint(customerAddress, archiveGoalPoint);
+                        safeMint(_customerAddress, archiveGoalPoint,_campaignId);
                     }
                 }
     }
@@ -121,12 +121,12 @@ contract CryptoCoffPoint is ICryptoCoffPoint, ERC721, ERC721URIStorage,  ERC721E
     }
 
 
-    function safeMint(address to, uint256 point) public {
+    function safeMint(address to, uint256 point, uint256 _campaignId) public {
         uint256 tokenId = _tokenIdCounter;
         _tokenIdCounter += 1;
         
         //push nftId to campaign
-        campaign.addNftToCampaign(campaignId, tokenId);
+        campaign.addNftToCampaign(_campaignId, tokenId);
 
         _safeMint(to, tokenId);
         _setTokenURI(tokenId, getMetadata()[point-1]);
