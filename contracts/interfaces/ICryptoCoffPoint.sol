@@ -31,4 +31,6 @@ interface ICryptoCoffPoint is ILogAutomation {
     function IsAchieveGoal(uint256 tokenId) external view returns (bool);
 
     function IsClaimed(uint256 tokenId) external view returns (bool);
+
+    function setNewTokenURI(uint256 _tokenId, string memory _tokenURI) external;
 }

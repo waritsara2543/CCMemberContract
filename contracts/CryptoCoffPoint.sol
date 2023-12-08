@@ -53,10 +53,10 @@ contract CryptoCoffPoint is ICryptoCoffPoint, ERC721, ERC721URIStorage,  ERC721E
                     uint256 currentPoint = pointStage(item[item.length-1], 0) + 1;
                     uint256 remaining = archiveGoalPoint - currentPoint;
                     if(remaining <= _point){
-                        setNewTokenUri(item[item.length-1], remaining);
+                        updateTokenUri(item[item.length-1], remaining);
                         addPointToNewNft(_point - remaining, _customerAddress,_campaignId);
                     }else{
-                        setNewTokenUri(item[item.length-1], _point);
+                        updateTokenUri(item[item.length-1], _point);
                     }
         }else{
             addPointToNewNft(_point, _customerAddress,_campaignId);
@@ -132,11 +132,15 @@ contract CryptoCoffPoint is ICryptoCoffPoint, ERC721, ERC721URIStorage,  ERC721E
         _setTokenURI(tokenId, getMetadata()[point-1]);
     }
 
-    function setNewTokenUri (uint256 _tokenId, uint256 point) internal  {
+    function updateTokenUri (uint256 _tokenId, uint256 point) internal  {
         uint newPoint = pointStage(_tokenId, point);
         string memory newUri = getMetadata()[newPoint];
         // Update the URI
-        _setTokenURI(_tokenId, newUri);
+       setNewTokenURI(_tokenId, newUri);
+    }
+
+    function setNewTokenURI (uint256 _tokenId, string memory _tokenURI) public  {
+        _setTokenURI(_tokenId, _tokenURI);
     }
 
     function pointStage(uint256 _tokenId,uint256 point) internal view returns (uint256 newPoint) {

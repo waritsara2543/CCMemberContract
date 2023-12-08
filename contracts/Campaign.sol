@@ -19,7 +19,8 @@ contract Campaign is ICampaign, Admin {
         string memory _description,
         string memory _baseURI,
         uint256 _timeStart,
-        uint256 _timeEnd
+        uint256 _timeEnd,
+        uint256 _expireClaim
     ) onlyAdmins(msg.sender) public {
         //cannot create campaign if has another campaign running
         require(!hasCampaignRunning(_timeStart,_timeEnd ), 'has campaign running');
@@ -32,6 +33,7 @@ contract Campaign is ICampaign, Admin {
             baseURI: _baseURI,
             timeStart: _timeStart,
             timeEnd: _timeEnd,
+            expireClaim: _expireClaim,
             nftId: new uint256[](0)
         });
     }

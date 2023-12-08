@@ -11,6 +11,7 @@ interface ICampaign {
         string baseURI;
         uint256 timeStart;
         uint256 timeEnd;
+        uint256 expireClaim; // time to claim after campaign end (days)
         uint256[] nftId;
     }
 
@@ -19,7 +20,8 @@ interface ICampaign {
         string memory _description,
         string memory _baseURI,
         uint256 _timeStart,
-        uint256 _timeEnd
+        uint256 _timeEnd,
+        uint256 _expireClaim
     ) external;
 
     function addNftToCampaign (uint256 _campaignId, uint256 _nftId) external;
@@ -39,6 +41,6 @@ interface ICampaign {
     function getCampaignByPeriod(string memory period) external  view
         returns (uint256[] memory id);
 
-
+    function getAllCampaign() external view returns (uint256[] memory id);
    
 }
